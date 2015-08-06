@@ -162,8 +162,11 @@ MYAPP.globals = {
 * @namespace MYAPP
 * @submodule _UTILS_
 * @type {Object}
+* @param {Object} app App global object
+* @param {Object} w Window
+* @param {Object} d Document
 */
-(function(app){
+(function(app, w, d){
 
 	"use strict";
 
@@ -222,7 +225,7 @@ MYAPP.globals = {
 
 			var oRegex = new RegExp('[\?&]' + paramName + '=([^&]+)', 'i'),
 
-				oMatch = oRegex.exec(document.location.search);
+				oMatch = oRegex.exec(d.location.search);
 
 			if (oMatch && oMatch.length > 1) {
 
@@ -301,32 +304,68 @@ MYAPP.globals = {
 		},
 
 		/**
-		 * @method  elementInViewport Check if an element is in viewport
-		 * @param  {Object} el DOM node to be checked
-		 * @return {Boolean}
-		 * @example
-		 * MYAPP._UTILS_.elementInViewport($("map"))
-		 */
-		elementInViewport: function elementInViewport(el) {
+         * @method isVisible Check if an element is in viewport (on Y axis)
+         * @param  {Object | String}  box    Node element to be checked
+         * @param  {Number}  offset
+         * @return {Boolean}
+         * @example:
+         * MYAPP._UTILS_.isVisible($("#main-header"));
+         */
+        isVisible: function(box, offset) {
 
-			if ( el instanceof jQuery) {
+            var bottom, offset, top, viewBottom, viewTop, innerHeight, offsetTop;
 
-				el = el[0];
+            if (box instanceof jQuery) {
 
-			}
+                box = box[0];
 
-			var rect = el.getBoundingClientRect(),
-				h = window.innerHeight || document.documentElement.clientHeight
-				/*,
-				w = window.innerWidth || document.documentElement.clientWidth*/
-				;
-			return ((rect.top >= 0 && rect.bottom <= h) ||  (h-rect.top>h/8));
+            } else {
 
-		}
+                box = d.querySelector(box);
+            }
+
+            if (!box) {
+
+                return false;
+            }
+
+            innerHeight = function innerHeight() {
+                if ('innerHeight' in w) {
+                    return w.innerHeight;
+                } else {
+                    return d.documentElement.clientHeight;
+                }
+            };
+
+            offsetTop = function offsetTop(element) {
+                var top;
+                while (element.offsetTop === void 0) {
+                    element = element.parentNode;
+                }
+                top = element.offsetTop;
+                while (element = element.offsetParent) {
+                    top += element.offsetTop;
+                }
+                return top;
+            };
+
+            offset = offset || 0;
+
+            viewTop = w.pageYOffset;
+
+            viewBottom = viewTop + Math.min(box.clientHeight, innerHeight()) - offset;
+
+            top = offsetTop(box);
+
+            bottom = top + box.clientHeight;
+
+            return top <= viewBottom && bottom >= viewTop;
+
+        }
 
 	};
 
-})(MYAPP);
+})(MYAPP, window, document);
 
 
 /**
@@ -618,64 +657,6 @@ MYAPP._EVENTS_ = {
 	}
 
 };
-
-/**
- * [description]
- * @param  {[type]} $    [description]
- * @param  {[type]} root [description]
- * @example
- * var myFn = app.Object.extend({
-		foo: "bar"
-	});
- */
-(function($, root) {
-	var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-	function has(obj, key) {
-		return obj != null && hasOwnProperty.call(obj, key);
-	}
-
-	function extend(protoProps, staticProps) {
-		var parent = this;
-		var child;
-
-		// The constructor function for the new subclass is either defined by you
-		// (the "constructor" property in your `extend` definition), or defaulted
-		// by us to simply call the parent's constructor.
-		if (protoProps && has(protoProps, 'constructor')) {
-			child = protoProps.constructor;
-		} else {
-			child = function(){ return parent.apply(this, arguments); };
-		}
-
-		// Add static properties to the constructor function, if supplied.
-		$.extend(child, parent, staticProps);
-
-		// Set the prototype chain to inherit from `parent`, without calling
-		// `parent`'s constructor function.
-		var Surrogate = function(){ this.constructor = child; };
-		Surrogate.prototype = parent.prototype;
-		child.prototype = new Surrogate;
-
-		// Add prototype properties (instance properties) to the subclass,
-		// if supplied.
-		if (protoProps) $.extend(child.prototype, protoProps);
-
-		// Set a convenience property in case the parent's prototype is needed
-		// later.
-		child.__super__ = parent.prototype;
-
-		return child;
-	}
-
-	function Object() {
-		this.initialize.apply(this, arguments);
-	}
-
-	Object.extend = extend;
-
-	root.Object = Object;
-}(jQuery, MYAPP));
 
 /**
 * Utility to manage cookies
