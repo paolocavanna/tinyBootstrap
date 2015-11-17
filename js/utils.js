@@ -2,48 +2,6 @@
 /* global MYAPP */
 
 /**
-* Manages communications between modules.
-* @class Topic
-* @namespace $
-* @static
-* @public
-* @param {String} id name of custom event
-* @required
-* @return {Object} topic an object holding all the methods that manage callbacks
-* @example:
-*   $.Topic("custom:event:name").publish([args]);
-*   $.Topic("custom:event:name").subscribe([callback]);
-*/
-$.Topic = function(id) {
-
-	"use strict";
-
-	var callbacks,
-		topic = id && MYAPP.topics[id];
-
-	if (!topic) {
-
-		callbacks = $.Callbacks();
-
-		topic = {
-			publish: callbacks.fire,
-			subscribe: callbacks.add,
-			unsubscribe: callbacks.remove
-		};
-
-		if (id) {
-
-			MYAPP.topics[id] = topic;
-
-		}
-
-	}
-
-	return topic;
-
-}; // end $.Topic
-
-/**
 * App's main namespace
 * @module MYAPP
 * @type {Object}
@@ -97,6 +55,48 @@ MYAPP.namespace("topics");
 MYAPP.namespace("globals");
 MYAPP.namespace("_UTILS_");
 MYAPP.namespace("_EVENTS_");
+
+/**
+* Manages communications between modules.
+* @class Topic
+* @namespace $
+* @static
+* @public
+* @param {String} id name of custom event
+* @required
+* @return {Object} topic an object holding all the methods that manage callbacks
+* @example:
+*   $.Topic("custom:event:name").publish([args]);
+*   $.Topic("custom:event:name").subscribe([callback]);
+*/
+$.Topic = function(id) {
+
+	"use strict";
+
+	var callbacks,
+		topic = id && MYAPP.topics[id];
+
+	if (!topic) {
+
+		callbacks = $.Callbacks();
+
+		topic = {
+			publish: callbacks.fire,
+			subscribe: callbacks.add,
+			unsubscribe: callbacks.remove
+		};
+
+		if (id) {
+
+			MYAPP.topics[id] = topic;
+
+		}
+
+	}
+
+	return topic;
+
+}; // end $.Topic
 
 /**
 * List of useful global vars
