@@ -22,7 +22,7 @@ MYAPP.namespace = function(ns_string) {
 
 	"use strict";
 
-	var parts = ns_string.split('.'),
+	var parts = ns_string.split("."),
 		parent = MYAPP,
 		len =  parts.length,
 		i = 0;
